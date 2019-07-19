@@ -1,12 +1,14 @@
 //
 // Created by Janon Wang on 2019/7/17.
 //
+#include <iostream>
 #include "anchor_hash.h"
 #define BIG_CONSTANT(x) (x##LLU)
 
 AnchorHash::AnchorHash(instance_idx_t n_instances, instance_idx_t n_used_instances)
-  : max_instances(n_instances), A(n_instances), K(n_instances),
-  W(n_instances), L(n_instances) {
+  : max_instances(n_instances), A(n_instances), K(n_instances), W(n_instances),
+  L(n_instances), fleaSeed(0xf1ea5eed), fleaRot1(uint16_t(27)), fleaRot2(uint16_t(17)),
+  fleaInitRounds(uint16_t(3)) {
   for (instance_idx_t i = 0; i < n_used_instances; i++) {
     M_b2i[i] = i;
     M_i2b[i] = i;
@@ -48,9 +50,11 @@ int AnchorHash::removeInstance(instance_idx_t instance_id) {
 }
 
 instance_idx_t AnchorHash::getBucket(key_t key) {
-  auto b = key % max_instances;
+  fleaInit(key);
+  auto b = fleaData.d % max_instances;
   while (A[b] > 0) {
-    auto h = key % A[b];
+    fleaRound();
+    auto h = fleaData.d % A[b];
     while (A[h] >= A[b]) {
       h = K[h];
     }
@@ -119,4 +123,24 @@ uint64_t AnchorHash::MurmurHash64A(const void *key, int len, uint64_t seed) {
   h ^= h >> r;
 
   return h;
+}
+
+void AnchorHash::fleaInit(uint64_t key) {
+  auto seed = uint32_t((key >> 32) ^ key);
+  fleaData.a = fleaSeed;
+  fleaData.b = seed;
+  fleaData.c = seed;
+  fleaData.d = seed;
+
+  for (int i = 0; i < fleaInitRounds; i++) {
+    fleaRound();
+  }
+}
+
+void AnchorHash::fleaRound() {
+  auto e = fleaData.a - rotateLeft32(fleaData.b, fleaRot1);
+  fleaData.a = fleaData.b ^ rotateLeft32(fleaData.c, fleaRot2);
+  fleaData.b = fleaData.c + fleaData.d;
+  fleaData.c = fleaData.d + e;
+  fleaData.d = e + fleaData.a;
 }

@@ -6,22 +6,21 @@
 uint16_t rng(uint16_t seed);
 
 int main() {
-  const uint16_t n_instances = 10;
-  const uint16_t n_used_instances = 3;
+  const instance_idx_t n_instances = 10;
+  const instance_idx_t n_used_instances = 3;
   std::vector<int> count_anchor(n_instances);
   std::vector<int> count_basic_hash(n_instances);
   AnchorHash anchorHash(n_instances, n_used_instances);
 
-  uint16_t key;
+  uint64_t key;
   uint16_t seed = 500;
   int n_samples = 100000;
   for (int i = 0; i < n_samples; i++) {
     key = rng(seed);
-    key = rng(key);
     auto instance_id = anchorHash.getInstance(key);
     count_anchor[instance_id]++;
 
-    uint16_t basic_hash_id = key % n_used_instances;
+    auto basic_hash_id = key % n_used_instances;
     count_basic_hash[basic_hash_id]++;
   }
 

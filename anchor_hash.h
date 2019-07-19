@@ -10,8 +10,8 @@
 #include <stack>
 #include <map>
 
-typedef uint16_t instance_idx_t;
-typedef uint16_t key_t;
+typedef uint32_t instance_idx_t;
+typedef uint64_t key_t;
 
 class AnchorHash final {
  public:
@@ -38,6 +38,23 @@ class AnchorHash final {
   // key is string and len is the length of string
   uint64_t MurmurHash64A ( const void * key, int len, uint64_t seed);
 
+  // flea random number generator
+  // http://burtleburtle.net/bob/rand/smallprng.html
+  const uint32_t fleaSeed;
+  const int  fleaRot1;
+  const int fleaRot2;
+  const int fleaInitRounds;
+  struct FleaData {
+    uint32_t a;
+    uint32_t b;
+    uint32_t c;
+    uint32_t d;
+  } fleaData;
+  inline uint32_t rotateLeft32(uint32_t val, int k) {
+    return (val << k) | (val >> (32 - k));
+  }
+  void fleaInit(uint64_t key);
+  void fleaRound();
 };
 
 #endif //ANCHORHASH_ANCHOR_HASH_H
