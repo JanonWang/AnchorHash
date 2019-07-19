@@ -14,7 +14,7 @@ int main() {
 
   uint64_t key;
   uint16_t seed = 500;
-  int n_samples = 100000;
+  int n_samples = 10000;
   for (int i = 0; i < n_samples; i++) {
     key = rng(seed);
     auto instance_id = anchorHash.getInstance(key);
@@ -24,25 +24,25 @@ int main() {
     count_basic_hash[basic_hash_id]++;
   }
 
-//  anchorHash.addInstance(9);
-//  for (int i = 0; i < 100000; i++) {
-//    key = rng(seed);
-//    uint16_t instance_id = anchorHash.getInstance(key);
-//    count_anchor[instance_id]++;
-//
-//    uint16_t basic_hash_id = key % n_used_instances;
-//    count_basic_hash[basic_hash_id]++;
-//  }
-//
-//  anchorHash.removeInstance(3);
-//  for (int i = 0; i < 100000; i++) {
-//    key = rng(seed);
-//    uint16_t instance_id = anchorHash.getInstance(key);
-//    count_anchor[instance_id]++;
-//
-//    uint16_t basic_hash_id = key % n_used_instances;
-//    count_basic_hash[basic_hash_id]++;
-//  }
+  anchorHash.addInstance(9);
+  for (int i = 0; i < n_samples; i++) {
+    key = rng(seed);
+    auto instance_id = anchorHash.getInstance(key);
+    count_anchor[instance_id]++;
+
+    auto basic_hash_id = key % n_used_instances;
+    count_basic_hash[basic_hash_id]++;
+  }
+
+  anchorHash.removeInstance(2);
+  for (int i = 0; i < n_samples; i++) {
+    key = rng(seed);
+    auto instance_id = anchorHash.getInstance(key);
+    count_anchor[instance_id]++;
+
+    auto basic_hash_id = key % n_used_instances;
+    count_basic_hash[basic_hash_id]++;
+  }
 
   std::cout << "Verify the balancing of Anchor:" << std::endl;
   double over_subscription = 0;
@@ -50,9 +50,10 @@ int main() {
     if (count_anchor[i] > over_subscription) over_subscription = count_anchor[i];
     std::cout << count_anchor[i] << " ";
   }
-  double average = double(n_samples) / double(n_used_instances);
-  std::cout << std::endl << "The over subscription of Anchor is: "
-  << (over_subscription - average) / average << std::endl;
+  std::cout << std::endl;
+//  double average = double(n_samples) / double(n_used_instances);
+//  std::cout << std::endl << "The over subscription of Anchor is: "
+//  << (over_subscription - average) / average << std::endl;
 
   std::cout << "Verify the balancing of basic hash:" << std::endl;
   over_subscription = 0;
@@ -60,9 +61,9 @@ int main() {
     if (count_basic_hash[i] > over_subscription) over_subscription = count_basic_hash[i];
     std::cout << count_basic_hash[i] << " ";
   }
-  std::cout << std::endl << "The over subscription of basic hash is: "
-  << (over_subscription - average) / average << std::endl;
-  std::cout << std::endl;
+//  std::cout << std::endl << "The over subscription of basic hash is: "
+//  << (over_subscription - average) / average << std::endl;
+//  std::cout << std::endl;
 }
 
 // create a random integer from 0 - 65535
